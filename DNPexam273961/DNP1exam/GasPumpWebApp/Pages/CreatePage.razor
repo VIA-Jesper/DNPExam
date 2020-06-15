@@ -1,0 +1,144 @@
+﻿@page "/create"
+@using GasPumpWebApp.Data
+
+@inject ApiService ApiService
+
+<h3>Create</h3>
+<hr/>
+<br/>
+<div class="col-4 offset-4">
+    
+    <h4>Fill your tank</h4>
+    
+    <img src="pump.jpg" alt="" class="img-fluid d-flex justify-content-center" />
+
+    <!-- Inputs -->
+    <div class="form-group">
+        <label for="input1">Tank size:</label>
+        <input type="number" class="form-control" id="input1" @bind="input1">
+    </div>
+    
+    <div class="form-group">
+        <label for="input2">Liters to tank:</label>
+        <input type="number" class="form-control" id="input2" @bind="input2">
+    </div>
+
+
+    <div class="form-group mt-2 d-flex justify-content-center">
+        <h3>Total Costs of filling the tank: @fillCost,-</h3>
+    </div>
+
+    <div class="form-group mt-2 d-flex justify-content-center">
+        <button class="btn btn-primary m-2 " @onclick="Create">Fill GasTank</button>
+        <button class="btn btn-secondary m-2" @onclick="CreatePump">Fill Pump</button>
+    </div>
+
+
+    <div class="form-group">
+        @if (errorMessage.Length > 0)
+        {
+            <p class="alert-danger font-weight-bold">@errorMessage</p>
+        }
+        else if (successMessage.Length > 0)
+        {
+            <p class="alert-success font-weight-bold">@successMessage</p>
+        }
+        else if (waitMessage.Length > 0)
+        {
+            <p class="alert-info font-weight-bold">@waitMessage</p>
+        }
+
+    </div>
+</div>
+
+
+
+
+
+@code {
+
+    private decimal _input1 { get; set; }
+
+    private decimal input1
+    {
+        get => _input1;
+        set
+        {
+            _input1 = value;
+            LoadInitialCosts();
+
+        }
+    }
+    private decimal input2 { get; set; }
+
+    private double fillCost { get; set; }
+
+
+
+    private string waitMessage = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+
+
+    private async void Create()
+    {
+        waitMessage = "Please wait while servers are being contacted.";
+        try
+        {
+            var result = await ApiService.GetFillTank(input2);
+            ClearInput();
+            successMessage = $"Successfully filled the tank for the price of {result},-";
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+
+        waitMessage = "";
+        StateHasChanged();
+    }
+    private async void CreatePump()
+    {
+        waitMessage = "Please wait while servers are being contacted.";
+        try
+        {
+            var result = await ApiService.PostFillPump();
+            ClearInput();
+            successMessage = $"Successfully filled the pump at {result}.";
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+
+        waitMessage = "";
+        StateHasChanged();
+    }
+
+    private void ClearInput()
+    {
+        input1 = 0;
+        input2 = 0;
+
+        errorMessage = "";
+        StateHasChanged();
+    }
+
+    private async void LoadInitialCosts()
+    {
+        successMessage = "";
+        errorMessage = "";
+        try
+        {
+            var result = await ApiService.GetTankCost(input1);
+            fillCost = result;
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+        StateHasChanged();
+    }
+
+
+}

@@ -1,0 +1,85 @@
+﻿@page "/view"
+@using TestWeb.Data
+@inject ApiService ApiService
+
+
+<h3>View</h3>
+<hr/>
+<br />
+
+
+
+<div class="col-6 offset-3">
+    <p class="alert-danger font-weight-bold">@errorMessage</p>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <button class="btn btn-outline-secondary" type="button" @onclick="LoadData">Load</button>
+        </div>
+        <select class="custom-select" id="inputGroupSelect03" @bind="selectedOption">
+            <option value="-1" selected hidden>Choose...</option>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+            <option value="3">Three</option>
+        </select>
+    </div>
+    
+
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Type</th>
+            <th scope="col">Height</th>
+            <th scope="col">Radius</th>
+            <th scope="col">Volume</th>
+        </tr>
+        </thead>
+
+        @if (resultList.Count != 0)
+        {
+            <tbody>
+            @foreach (var result in resultList)
+            {
+                <tr>
+                    <th scope="row">@result</th>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            }
+            </tbody>
+
+        }
+        else
+        {
+            <p>No data has been loaded...</p>
+        }
+    </table>
+
+</div>
+@code {
+
+    private List<double> resultList = new List<double>();
+    private int selectedOption;
+    private string errorMessage = "";
+
+
+
+
+
+    private async void LoadData()
+    {
+        try
+        {
+            resultList = await ApiService.GetAll();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+        StateHasChanged();
+    }
+
+}
